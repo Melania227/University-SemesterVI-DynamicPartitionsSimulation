@@ -11,5 +11,6 @@ bool detachMemoryBlock(void *block);
 
 #define FILENAME "shmBlock"
 #define IPC_RESULT_ERROR (-1)
+#define MUTEXES_AMOUNT (3)
 
 #endif

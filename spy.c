@@ -8,7 +8,8 @@ int main(){
     
     //attach shared memories 
     int *memoryBlock = (int*)attachMemoryBlock(FILENAME, 0);
-    Process *processesBlock = (Process*)attachMemoryBlock(FILENAME, 0);
+    Process *processesBlock = (Process*)attachMemoryBlock(FILENAME, 1);
+    pthread_mutex_t *mutexesBlock = (pthread_mutex_t*)attachMemoryBlock(FILENAME, 2);
     
     if (memoryBlock == NULL || processesBlock == NULL)
     {
@@ -22,6 +23,7 @@ int main(){
     //detach shared mories 
     detachMemoryBlock((void*)memoryBlock);
     detachMemoryBlock((void*)processesBlock);
+    detachMemoryBlock((void*)mutexesBlock);
 
     return 0;
 }
