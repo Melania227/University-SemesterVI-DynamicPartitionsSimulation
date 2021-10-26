@@ -8,7 +8,8 @@ int main(){
     //destroy shared memories 
     bool success = destroyMemoryBlock(FILENAME, 0)
                 && destroyMemoryBlock(FILENAME, 1)
-                && destroyMemoryBlock(FILENAME, 2);
+                && destroyMemoryBlock(FILENAME, 2)
+                && destroyMemoryBlock(FILENAME, 3);
 
     if (!success)
     {
