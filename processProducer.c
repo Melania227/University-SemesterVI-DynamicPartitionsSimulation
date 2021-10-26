@@ -5,6 +5,88 @@
 #include "./sources/sharedMemory.c"
 #include "./sources/Process.c"
 
+int firstFit(int* memory, int size, int amount){
+    // retorna la posicion en que la metio o -1 si no pudo
+    int init = -1;
+    int end = -1;
+    for (int i = 0; i < size; i++) {
+        if(memory[i]==0){
+            if (init==-1){
+                init = i;
+            }
+            end = i;
+        }
+        else{
+            init = -1;
+            end = 0;
+        }
+        if ((end-init)+1==amount){
+            printf("Espacio disponible en: %d \n", init);
+            return init;
+        }
+    }
+    return -1;
+}
+
+int bestFit(int* memory, int size, int amount){
+    // retorna la posicion en que la metio o -1 si no pudo
+    int initTemp = -1;
+    int init = -1;
+    int endTemp = -1;
+    int blockSize = size;
+    for (int i = 0; i < size; i++) {
+        if(memory[i]==0){
+            if (initTemp==-1){
+                initTemp = i;
+            }
+            endTemp = i;
+        }
+        else{
+            initTemp = -1;
+            endTemp = 0;
+            continue;
+        }
+        if ((endTemp-initTemp)+1>=amount){
+            if((endTemp-initTemp)+1<blockSize){
+                blockSize=(endTemp-initTemp)+1;
+                init = initTemp;
+            }
+        }
+    }
+    printf("Espacio disponible en: %d \n", init);
+    return init;
+}
+
+int worstFit(int* memory, int size, int amount){
+    // retorna la posicion en que la metio o -1 si no pudo
+    int initTemp = -1;
+    int init = -1;
+    int endTemp = -1;
+    int blockSize = 0;
+    for (int i = 0; i < size; i++) {
+        if(memory[i]==0){
+            if (initTemp==-1){
+                initTemp = i;
+            }
+            endTemp = i;
+        }
+        else{
+            initTemp = -1;
+            endTemp = 0;
+            continue;
+        }
+        if ((endTemp-initTemp)+1>amount){
+            if((endTemp-initTemp)+1>blockSize){
+                blockSize=(endTemp-initTemp)+1;
+                init = initTemp;
+            }
+        }
+    }
+    printf("Espacio disponible en: %d \n", init);
+    return init;
+}
+
+
 int main(){    
     
     //attach shared memories 
