@@ -28,6 +28,35 @@ int firstFit(int* memory, int size, int amount){
     return -1;
 }
 
+int bestFit(int* memory, int size, int amount){
+    // retorna la posicion en que la metio o -1 si no pudo
+    int initTemp = -1;
+    int init = -1;
+    int endTemp = -1;
+    int blockSize = size;
+    for (int i = 0; i < size; i++) {
+        if(memory[i]==0){
+            if (initTemp==-1){
+                initTemp = i;
+            }
+            endTemp = i;
+        }
+        else{
+            initTemp = -1;
+            endTemp = 0;
+            continue;
+        }
+        if ((endTemp-initTemp)+1>=amount){
+            if((endTemp-initTemp)+1<blockSize){
+                blockSize=(endTemp-initTemp)+1;
+                init = initTemp;
+            }
+        }
+    }
+    printf("Espacio disponible en: %d \n", init);
+    return init;
+}
+
 
 int main(){    
     
