@@ -1,9 +1,16 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <pthread.h>
+#include <unistd.h>
 
 #include "./sources/sharedMemory.c"
 #include "./sources/Process.c"
+#include "./sources/MemoryInfo.c"
+
+int *memoryBlock;
+Process *processesBlock;
+pthread_mutex_t *mutexesBlock;
+MemoryInfo *memoryInfoBlock;
 
 int firstFit(int* memory, int size, int amount){
     // retorna la posicion en que la metio o -1 si no pudo
@@ -85,16 +92,51 @@ int worstFit(int* memory, int size, int amount){
     printf("Espacio disponible en: %d \n", init);
     return init;
 }
+ 
+int randomInRange(int min, int max){
+    return rand() % (max + 1 - min) + min;
+}
+
+void* process(){
+
+    printf("Process created pid: %d\n",(int)pthread_self());
+
+    int lines = randomInRange(1,10);
+    int watingTime = randomInRange(5,5)*1000000;
+
+    int pos = worstFit(memoryBlock,memoryInfoBlock->memorySize,lines);
+    
+    if (pos == -1)
+    {
+        printf("Me morí.\n");
+        return NULL;    
+    }
+    
+    for (int i = pos; i < pos+lines; i++)
+    {
+        memoryBlock[i]=pthread_self();
+    }
+
+    usleep(watingTime);
+
+    for (int i = pos; i < pos+lines; i++)
+    {
+        memoryBlock[i]=0;
+    }
+    return NULL;
+}
+
 
 
 int main(){    
     
     //attach shared memories 
-    int *memoryBlock = (int*)attachMemoryBlock(FILENAME, 0);
-    Process *processesBlock = (Process*)attachMemoryBlock(FILENAME, 1);
-    pthread_mutex_t *mutexesBlock = (pthread_mutex_t*)attachMemoryBlock(FILENAME, 2);
+    memoryBlock = (int*)attachMemoryBlock(FILENAME, 0);
+    processesBlock = (Process*)attachMemoryBlock(FILENAME, 1);
+    mutexesBlock = (pthread_mutex_t*)attachMemoryBlock(FILENAME, 2);
+    memoryInfoBlock = (MemoryInfo*)attachMemoryBlock(FILENAME, 3);
   
-    if (memoryBlock == NULL || processesBlock == NULL)
+    if (memoryBlock == NULL || processesBlock == NULL || mutexesBlock == NULL || memoryInfoBlock == NULL)
     {
         printf("Error. Shared memory could´nt be attached.\n");
         return IPC_RESULT_ERROR;
@@ -103,10 +145,36 @@ int main(){
     //produce processes
     printf("Processes producer working...\n");
 
-    //detach shared mories 
+    int waitingTime = randomInRange(2,2)*1000000;
+
+    int threadsAmount = 0;
+    pthread_t *threads = malloc(sizeof(pthread_t));
+
+    while (true)
+    {
+        threadsAmount++;
+        threads = (pthread_t*)realloc(threads,sizeof(pthread_t)*threadsAmount);
+        
+        //Create thread
+        pthread_t t1;
+        pthread_create(&t1, NULL, &process, NULL);
+
+        threads[threadsAmount-1] = t1;       
+
+        usleep(waitingTime);
+    }
+
+    for (int i = 0; i < threadsAmount; i++)
+    {
+        //Join the PathFinderExecute Thread
+        pthread_join(threads[i], NULL);
+    }
+    
+    //detach shared memories 
     detachMemoryBlock((void*)memoryBlock);
     detachMemoryBlock((void*)processesBlock);
     detachMemoryBlock((void*)mutexesBlock);
+    detachMemoryBlock((void*)memoryInfoBlock);
 
     return 0;
 }
