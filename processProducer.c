@@ -28,7 +28,7 @@ int firstFit(int* memory, int size, int amount){
             end = 0;
         }
         if ((end-init)+1==amount){
-            printf("Espacio disponible en: %d \n", init);
+           // printf("Espacio disponible en: %d \n", init);
             return init;
         }
     }
@@ -60,7 +60,7 @@ int bestFit(int* memory, int size, int amount){
             }
         }
     }
-    printf("Espacio disponible en: %d \n", init);
+  //  printf("Espacio disponible en: %d \n", init);
     return init;
 }
 
@@ -89,7 +89,7 @@ int worstFit(int* memory, int size, int amount){
             }
         }
     }
-    printf("Espacio disponible en: %d \n", init);
+  //  printf("Espacio disponible en: %d \n", init);
     return init;
 }
  
@@ -97,36 +97,82 @@ int randomInRange(int min, int max){
     return rand() % (max + 1 - min) + min;
 }
 
+void modifyProcess(Process *process, int pId, int pos, int lines, int state){
+    pthread_mutex_lock(&mutexesBlock[1]);  
+    process->pId = pId;
+    process->pos = pos;
+    process->lines = process->lines;
+    process->state = state;
+    pthread_mutex_unlock(&mutexesBlock[1]); 
+}
+
+void modifyProcessPos(Process *process, int pos){
+    pthread_mutex_lock(&mutexesBlock[1]);  
+    process->pos = pos;
+    pthread_mutex_unlock(&mutexesBlock[1]); 
+}
+
+void modifyProcessState(Process *process, int state){
+    pthread_mutex_lock(&mutexesBlock[1]);  
+    process->state = state;
+    pthread_mutex_unlock(&mutexesBlock[1]); 
+}
+
 void* process(){
-
-    printf("Process created pid: %d\n",(int)pthread_self());
-
+ 
     int lines = randomInRange(1,10);
-    int watingTime = randomInRange(5,5)*1000000;
+    int watingTime = randomInRange(20,60)*1000000;
 
-    int pos = worstFit(memoryBlock,memoryInfoBlock->memorySize,lines);
+    Process *process;
+
+    pthread_mutex_lock(&mutexesBlock[1]);
+    for (int i = 0; i < memoryInfoBlock->processesArraySize; i++)
+    {
+        if (processesBlock[i].pId == 0)
+        {
+            process = &processesBlock[i];
+            break;
+        }    
+    }
+    process->pId = pthread_self();
+    process->lines = lines;
+    process->state = 1;
+    pthread_mutex_unlock(&mutexesBlock[1]);
+
+    printf("Process created pid: %d\n",process->pId);
     
+    pthread_mutex_lock(&mutexesBlock[0]); 
+    modifyProcessState(process,3); 
+    int pos = worstFit(memoryBlock,memoryInfoBlock->memorySize,lines);
+    if (pos != -1)
+    {
+        modifyProcessPos(process,pos);
+        for (int i = pos; i < pos+lines; i++)
+        {
+            memoryBlock[i] = process->pId;
+        }  
+    }
+    modifyProcessState(process,2); 
+    pthread_mutex_unlock(&mutexesBlock[0]); 
     if (pos == -1)
     {
-        printf("Me morí.\n");
         return NULL;    
     }
     
-    for (int i = pos; i < pos+lines; i++)
-    {
-        memoryBlock[i]=pthread_self();
-    }
-
     usleep(watingTime);
-
+    
+    modifyProcessState(process,1); 
+    pthread_mutex_lock(&mutexesBlock[0]); 
+    modifyProcessState(process,3); 
     for (int i = pos; i < pos+lines; i++)
     {
         memoryBlock[i]=0;
     }
+    modifyProcess(process,0,0,0,0);
+    pthread_mutex_unlock(&mutexesBlock[0]); 
+
     return NULL;
 }
-
-
 
 int main(){    
     
@@ -145,7 +191,7 @@ int main(){
     //produce processes
     printf("Processes producer working...\n");
 
-    int waitingTime = randomInRange(2,2)*1000000;
+    int waitingTime = randomInRange(30,60)*1000000;
 
     int threadsAmount = 0;
     pthread_t *threads = malloc(sizeof(pthread_t));
