@@ -8,10 +8,10 @@ typedef struct Process Process;
 struct Process {
     int pId;
     int pos;
-    int size;
-    char* state;  
+    int lines;
+    int state;  
 };
 
-Process* newProcess();
+Process* newProcess(int pId, int lines);
 
 #endif

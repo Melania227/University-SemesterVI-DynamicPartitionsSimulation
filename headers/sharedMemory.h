@@ -9,8 +9,9 @@ bool destroyMemoryBlock(char *filename, int pos);
 void * attachMemoryBlock(char *filename, int pos);
 bool detachMemoryBlock(void *block);
 
-#define FILENAME "shmBlock"
+#define FILENAME "shmBlock.dat"
 #define IPC_RESULT_ERROR (-1)
 #define MUTEXES_AMOUNT (3)
+#define PROCESS_FACTOR (3)
 
 #endif
