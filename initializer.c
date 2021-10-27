@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <pthread.h>
 
@@ -26,6 +27,10 @@ bool createSharedMemories(int memoryBlockSize, int processesBlockSize, int mutex
 }
 
 int main(){
+
+    FILE *fptr;
+    fptr = fopen(FILENAME,"w");
+    fclose(fptr);
 
     //read lines amount
     int lines;
