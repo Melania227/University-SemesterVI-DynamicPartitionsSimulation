@@ -67,7 +67,7 @@ int main(){
     //mutex intializations
     for (int i = 0; i < MUTEXES_AMOUNT; i++)
     {
-        int x = pthread_mutex_init(&mutexesBlock[i], &mutexattr);
+        pthread_mutex_init(&mutexesBlock[i], &mutexattr);
     }
 
     //MemoryInfo  intialization
