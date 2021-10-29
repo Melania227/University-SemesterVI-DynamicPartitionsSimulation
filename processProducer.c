@@ -6,6 +6,7 @@
 #include "./sources/sharedMemory.c"
 #include "./sources/Process.c"
 #include "./sources/MemoryInfo.c"
+#include "./sources/binnacle.c"
 
 int *memoryBlock;
 Process *processesBlock;
@@ -149,11 +150,18 @@ void modifyProcessState(Process *process, int state){
     pthread_mutex_unlock(&mutexesBlock[1]); 
 }
 
+void writeInBinnacle(char* binnacleLine){
+    pthread_mutex_lock(&mutexesBlock[3]);
+    writeLine(memoryInfoBlock->binnacleRoute, binnacleLine);
+    pthread_mutex_unlock(&mutexesBlock[3]);
+}
+
 void* process(){
  
     int lines = randomInRange(1,10);
     int seconds = randomInRange(6,6);
     int watingTime = seconds*1000000;
+    char* binnacleLine;
 
     Process *process = NULL;
 
@@ -179,10 +187,19 @@ void* process(){
     pthread_mutex_unlock(&mutexesBlock[2]);
     pthread_mutex_unlock(&mutexesBlock[1]);
 
-    printf("Process %d created with %d lines and %d seconds time.\n", process->pId, lines, seconds);
+    binnacleLine = (char*)malloc(sizeof(char)*100);
+    sprintf(binnacleLine, "Process %d created with %d lines and %d seconds time.", process->pId, lines, seconds);
+    writeInBinnacle(binnacleLine);
     
+    printf("Process %d created with %d lines and %d seconds time.\n", process->pId, lines, seconds);
+
     pthread_mutex_lock(&mutexesBlock[0]); 
     modifyProcessState(process,3); 
+    
+    binnacleLine = (char*)malloc(sizeof(char)*100);
+    sprintf(binnacleLine, "The process %d has memory access.", process->pId);
+    writeInBinnacle(binnacleLine);
+
     int pos = algorithm(memoryBlock,memoryInfoBlock->memorySize,lines);
     if (pos != -1)
     {
@@ -191,12 +208,26 @@ void* process(){
         {
             memoryBlock[i] = process->pId;
         }  
+        
+        binnacleLine = (char*)malloc(sizeof(char)*100);
+        sprintf(binnacleLine, "The process %d has written in memory from line %d to line %d.", process->pId, process->pos+1, process->pos + process->lines);
+        writeInBinnacle(binnacleLine);
     }
+
+    binnacleLine = (char*)malloc(sizeof(char)*100);
+    sprintf(binnacleLine, "The process %d has realeased memory access.", process->pId);
+    writeInBinnacle(binnacleLine);
+
     modifyProcessState(process,2); 
     pthread_mutex_unlock(&mutexesBlock[0]); 
     if (pos == -1)
     {
+        binnacleLine = (char*)malloc(sizeof(char)*100);
+        sprintf(binnacleLine, "There's no space for process %d, process died.", process->pId);
+        writeInBinnacle(binnacleLine);
+
         printf("There's no space for process %d, process died.\n", process->pId);
+
         modifyProcess(process,0,0,0,0);
         return NULL;    
     }
@@ -206,11 +237,30 @@ void* process(){
     modifyProcessState(process,1); 
     pthread_mutex_lock(&mutexesBlock[0]); 
     modifyProcessState(process,3); 
+
+    binnacleLine = (char*)malloc(sizeof(char)*100);
+    sprintf(binnacleLine, "The process %d has memory access.", process->pId);
+    writeInBinnacle(binnacleLine);
+
     for (int i = pos; i < pos+lines; i++)
     {
         memoryBlock[i]=0;
     }
+
+    binnacleLine = (char*)malloc(sizeof(char)*100);
+    sprintf(binnacleLine, "The process %d has released memory from line %d to line %d.", process->pId, process->pos+1, process->pos + process->lines);
+    writeInBinnacle(binnacleLine);
+
+    binnacleLine = (char*)malloc(sizeof(char)*100);
+    sprintf(binnacleLine, "The process %d has realeased memory access.", process->pId);
+    writeInBinnacle(binnacleLine);
+
+    binnacleLine = (char*)malloc(sizeof(char)*100);
+    sprintf(binnacleLine, "The process %d has finished successfully.", process->pId);
+    writeInBinnacle(binnacleLine);
+
     printf("The process %d has finished successfully.\n", process->pId);
+    
     modifyProcess(process,0,0,0,0);
     pthread_mutex_unlock(&mutexesBlock[0]); 
 

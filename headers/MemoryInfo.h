@@ -8,7 +8,8 @@ typedef struct MemoryInfo MemoryInfo;
 struct MemoryInfo {
     int memorySize;
     int processesArraySize;
-    int processCounter;  
+    int processCounter;
+    char binnacleRoute [100];
 };
 
 MemoryInfo* newMemoryInfo(int memorySize, int processesArraySize);
