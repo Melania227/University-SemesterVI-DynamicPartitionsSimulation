@@ -159,7 +159,7 @@ void writeInBinnacle(char* binnacleLine){
 void* process(){
  
     int lines = randomInRange(1,10);
-    int seconds = randomInRange(6,6);
+    int seconds = randomInRange(20,60);
     int watingTime = seconds*1000000;
     char* binnacleLine;
 
@@ -188,7 +188,7 @@ void* process(){
     pthread_mutex_unlock(&mutexesBlock[1]);
 
     binnacleLine = (char*)malloc(sizeof(char)*100);
-    sprintf(binnacleLine, "Process %d created with %d lines and %d seconds time.", process->pId, lines, seconds);
+    sprintf(binnacleLine, "Process %d created with %d lines and %d seconds of execution time.", process->pId, lines, seconds);
     writeInBinnacle(binnacleLine);
     
     printf("Process %d created with %d lines and %d seconds time.\n", process->pId, lines, seconds);
@@ -269,6 +269,8 @@ void* process(){
 
 void processProducer(){
 
+    writeInBinnacle("The Process Producer has started to produce processes.");
+
     int waitingTime = 0;
 
     int threadsAmount = 0;
@@ -285,8 +287,15 @@ void processProducer(){
 
         threads[threadsAmount-1] = t1;     
         
-        waitingTime = randomInRange(1,1)*1000000;  
+        int seconds = randomInRange(20,60);
+        waitingTime = seconds*1000000;
+
         usleep(waitingTime);
+
+        char* binnacleLine = (char*)malloc(sizeof(char)*100);
+        sprintf(binnacleLine, "The Process Producer has waited for %d seconds.", seconds);
+        writeInBinnacle(binnacleLine);
+
     }
 
     for (int i = 0; i < threadsAmount; i++)
@@ -309,6 +318,8 @@ int main(){
         printf("Error. Shared memory could´nt be attached.\n");
         return IPC_RESULT_ERROR;
     }
+
+    memoryInfoBlock->processProducerId = getpid();
 
     printf("\nWelcome to Process Producer Program!\n\n");
     printf("Select the algorithm:\n");
@@ -343,6 +354,7 @@ int main(){
             break;
         }
         else if(option == 4){
+            memoryInfoBlock->processProducerId = 0;
             break;
         }
         else{
