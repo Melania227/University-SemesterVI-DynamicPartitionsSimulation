@@ -1,0 +1,28 @@
+Initializer 
+gcc -pthread initializer.c -o bin/initializer
+./bin/initializer
+
+ProcessProducer 
+gcc -pthread processProducer.c -o bin/processProducer
+./bin/processProducer
+
+Spy
+gcc -pthread spy.c -o bin/spy
+./bin/spy
+
+Finisher
+gcc -pthread finisher.c -o bin/finisher
+./bin/finisher
+
+
+semaphores 
+0 -> memory
+1 -> processes
+2 -> memoryInfo
+3 -> binnacle
+
+state 
+0 -> empty 
+1 -> blocked
+2 -> executing
+3 -> memoryAccess
