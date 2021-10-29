@@ -108,16 +108,15 @@ int main(){
     printf("Binnacle Route is: %s \n",memoryInfoBlock->binnacleRoute);
     
     printf("\nWelcome to Spy Program!\n\n");
-    printf("Options:\n");
-    printf("1. Memory state. \n");
-    printf("2. Processes state. \n");
-    printf("3. Exit. \n");
     
-    
-     while (true)
+    while (true)
     {
         //read option
-        int option =2;
+        int option;
+        printf("Options:\n");
+        printf("1. Memory state. \n");
+        printf("2. Processes state. \n");
+        printf("3. Exit. \n");
         printf("Please enter an option: ");
         scanf("%d", &option); 
         if (option == 1)
@@ -133,7 +132,7 @@ int main(){
             break;
         }
         else{
-            printf("Invalid option. ");
+            printf("Invalid option.\n\n");
         }
     }
    
