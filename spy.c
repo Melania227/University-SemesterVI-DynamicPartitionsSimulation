@@ -97,14 +97,17 @@ int main(){
         printf("Error. Shared memory could´nt be attached.\n");
         return IPC_RESULT_ERROR;
     }
+
+    printf("Binnacle Route is: %s \n",memoryInfoBlock->binnacleRoute);
     
-    printf("\nWelcome to Spy Program!\n\n");
+    /*printf("\nWelcome to Spy Program!\n\n");
     printf("Options:\n");
     printf("1. Memory state. \n");
     printf("2. Processes state. \n");
     printf("3. Exit. \n");
     
-    while (true)
+    
+     while (true)
     {
         //read option
         int option =2;
@@ -123,7 +126,7 @@ int main(){
         else{
             printf("Invalid option. ");
         }
-    }
+    } */
    
     //detach shared memories 
     detachMemoryBlock((void*)memoryBlock);

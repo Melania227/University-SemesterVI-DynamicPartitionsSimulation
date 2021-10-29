@@ -6,6 +6,7 @@
 #include "./sources/sharedMemory.c"
 #include "./sources/Process.c"
 #include "./sources/MemoryInfo.c"
+#include "./sources/binnacle.c"
 
 bool createSharedMemories(int memoryBlockSize, int processesBlockSize, int mutexesBlockSize){
 
@@ -71,6 +72,9 @@ int main(){
 
     //MemoryInfo  intialization
     memcpy(memoryInfoBlock, newMemoryInfo(lines, lines*PROCESS_FACTOR), sizeof(MemoryInfo));
+
+    //Binnacle inizialization
+    createBinnacle(memoryInfoBlock->binnacleRoute);
 
     //detach memories
     detachMemoryBlock((void*)mutexesBlock);

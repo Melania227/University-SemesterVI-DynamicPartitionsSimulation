@@ -3,21 +3,42 @@
 #include <time.h>
 #include <string.h>
 
-int main(){
 
-    char routeDateTime[100];
+void writeLine(char*binnacleRoute, char*strToWrite){
+    FILE *fptr;
+    fptr = fopen(binnacleRoute,"w");
+    
+    if(fptr == NULL)
+    {
+        printf("Error creating binnacle \n");   
+        exit(1);             
+    }
+
+    //Get time
     time_t rawtime;
     struct tm *timeinfo;
 
     time ( &rawtime );
     timeinfo = localtime ( &rawtime );
-    strftime(routeDateTime, strlen("binnacle/DD-MMM-YYYY HH:MM:SS.txt")+1,"binnacle/%d-%b-%Y_%H-%M-\%S.txt",timeinfo);
-    printf("%s \n", routeDateTime );
-   
-    writeFile(routeDateTime);
     
+    char strTime [100]; 
+    strftime(strTime, strlen("HH:MM:SS")+1,"%H:%M:\%S", timeinfo);
+
+    fprintf(fptr, "%s %s \n", strToWrite, strTime);
+
+    fclose(fptr);
+}
+
+
+void createBinnacle(char*binnacleRoute){
+    time_t rawtime;
+    struct tm *timeinfo;
+
+    time ( &rawtime );
+    timeinfo = localtime ( &rawtime );
+    strftime(binnacleRoute, strlen("binnacle/DD-MMM-YYYY HH:MM:SS.txt")+1,"binnacle/%d-%b-%Y_%H-%M-\%S.txt",timeinfo);
     
-    return 0;
+    writeLine(binnacleRoute,"Binnacle created at:");
 }
 
 
