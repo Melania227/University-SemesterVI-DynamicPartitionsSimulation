@@ -6,7 +6,7 @@
 
 void writeLine(char*binnacleRoute, char*strToWrite){
     FILE *fptr;
-    fptr = fopen(binnacleRoute,"a");
+    fptr = fopen(binnacleRoute,"w");
     
     if(fptr == NULL)
     {
@@ -21,12 +21,8 @@ void writeLine(char*binnacleRoute, char*strToWrite){
     time ( &rawtime );
     timeinfo = localtime ( &rawtime );
     
-    char strTime [100]; 
-    strftime(strTime, strlen("HH:MM:SS")+1,"%H:%M:\%S", timeinfo);
-
-    fprintf(fptr, "Time: %s  -  %s\n", strTime, strToWrite);
-
-    fclose(fptr);
+    
+    return 0;
 }
 
 
