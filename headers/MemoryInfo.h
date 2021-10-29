@@ -9,6 +9,7 @@ struct MemoryInfo {
     int memorySize;
     int processesArraySize;
     int processCounter;
+    int processProducerId;
     char binnacleRoute [100];
 };
 

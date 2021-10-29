@@ -11,6 +11,7 @@ MemoryInfo* newMemoryInfo(int memorySize, int processesArraySize){
     self->memorySize = memorySize;
     self->processesArraySize = processesArraySize;
     self->processCounter = 0;
+    self->processProducerId = 0;
     self->binnacleRoute;
 
     return self;
