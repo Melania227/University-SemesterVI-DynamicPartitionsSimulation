@@ -6,6 +6,7 @@
 #include "./sources/sharedMemory.c"
 #include "./sources/Process.c"
 #include "./sources/MemoryInfo.c"
+#include "./sources/binnacle.c"
 
 //attach shared memories 
 int *memoryBlock;
@@ -84,6 +85,12 @@ void processesState(){
     pthread_mutex_unlock(&mutexesBlock[1]);
 }
 
+void writeInBinnacle(char* binnacleLine){
+    pthread_mutex_lock(&mutexesBlock[3]);
+    writeLine(memoryInfoBlock->binnacleRoute, binnacleLine);
+    pthread_mutex_unlock(&mutexesBlock[3]);
+}
+
 int main(){    
     
     //attach shared memories 
@@ -97,6 +104,8 @@ int main(){
         printf("Error. Shared memory could´nt be attached.\n");
         return IPC_RESULT_ERROR;
     }
+
+    printf("Binnacle Route is: %s \n",memoryInfoBlock->binnacleRoute);
     
     printf("\nWelcome to Spy Program!\n\n");
     printf("Options:\n");
@@ -104,7 +113,8 @@ int main(){
     printf("2. Processes state. \n");
     printf("3. Exit. \n");
     
-    while (true)
+    
+     while (true)
     {
         //read option
         int option =2;
@@ -113,9 +123,11 @@ int main(){
         if (option == 1)
         {
             memoryState();
+            writeInBinnacle("Spy program checked memory state.");
         } 
         else if(option == 2){
             processesState();
+            writeInBinnacle("Spy program checked processes state.");
         }
         else if(option == 3){
             break;

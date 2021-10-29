@@ -1,10 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <pthread.h>
 
 #include "./sources/sharedMemory.c"
 #include "./sources/Process.c"
 #include "./sources/MemoryInfo.c"
+#include "./sources/binnacle.c"
 
 bool createSharedMemories(int memoryBlockSize, int processesBlockSize, int mutexesBlockSize){
 
@@ -26,6 +28,10 @@ bool createSharedMemories(int memoryBlockSize, int processesBlockSize, int mutex
 }
 
 int main(){
+
+    FILE *fptr;
+    fptr = fopen(FILENAME,"w");
+    fclose(fptr);
 
     //read lines amount
     int lines;
@@ -61,11 +67,14 @@ int main(){
     //mutex intializations
     for (int i = 0; i < MUTEXES_AMOUNT; i++)
     {
-        int x = pthread_mutex_init(&mutexesBlock[i], &mutexattr);
+        pthread_mutex_init(&mutexesBlock[i], &mutexattr);
     }
 
     //MemoryInfo  intialization
     memcpy(memoryInfoBlock, newMemoryInfo(lines, lines*PROCESS_FACTOR), sizeof(MemoryInfo));
+
+    //Binnacle inizialization
+    createBinnacle(memoryInfoBlock->binnacleRoute);
 
     //detach memories
     detachMemoryBlock((void*)mutexesBlock);
