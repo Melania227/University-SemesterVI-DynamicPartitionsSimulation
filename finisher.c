@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <pthread.h>
+#include <signal.h>
 
 #include "./sources/sharedMemory.c"
 #include "./sources/MemoryInfo.c"
@@ -20,6 +22,19 @@ int main(){
     memoryInfoBlock = (MemoryInfo*)attachMemoryBlock(FILENAME, 3);
     mutexesBlock = (pthread_mutex_t*)attachMemoryBlock(FILENAME, 2);
 
+    pthread_mutex_lock(&mutexesBlock[0]);
+    pthread_mutex_lock(&mutexesBlock[1]);
+
+    if(kill(memoryInfoBlock->processProducerId, SIGKILL) == 0){
+        writeInBinnacle("Finisher program killed process producer.");
+    }
+
+    writeInBinnacle("Finisher program deleted shared memory block.");
+    writeInBinnacle("Binnacle closed.");
+
+    pthread_mutex_unlock(&mutexesBlock[0]);
+    pthread_mutex_unlock(&mutexesBlock[1]);
+     
     //destroy shared memories 
     bool success = destroyMemoryBlock(FILENAME, 0)
                 && destroyMemoryBlock(FILENAME, 1)
@@ -32,12 +47,8 @@ int main(){
         return IPC_RESULT_ERROR;
     }
 
-    writeInBinnacle("Finisher program deleted shared memory block.");
-    writeInBinnacle("Finisher program killed process producer.");
-    writeInBinnacle("Binnacle closed.");
+    printf("Shared memory block deleted.\n");   
 
-    printf("Shared memory block deleted.\n");    
-    
     //detach shared memories 
     detachMemoryBlock((void*)memoryInfoBlock);
 
