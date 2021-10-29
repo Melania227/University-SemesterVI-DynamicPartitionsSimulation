@@ -2,9 +2,24 @@
 #include <stdbool.h>
 
 #include "./sources/sharedMemory.c"
+#include "./sources/MemoryInfo.c"
+#include "./sources/binnacle.c"
+
+MemoryInfo *memoryInfoBlock;
+pthread_mutex_t *mutexesBlock;
+
+void writeInBinnacle(char* binnacleLine){
+    pthread_mutex_lock(&mutexesBlock[3]);
+    writeLine(memoryInfoBlock->binnacleRoute, binnacleLine);
+    pthread_mutex_unlock(&mutexesBlock[3]);
+}
 
 int main(){
-    
+
+    //attach shared memories 
+    memoryInfoBlock = (MemoryInfo*)attachMemoryBlock(FILENAME, 3);
+    mutexesBlock = (pthread_mutex_t*)attachMemoryBlock(FILENAME, 2);
+
     //destroy shared memories 
     bool success = destroyMemoryBlock(FILENAME, 0)
                 && destroyMemoryBlock(FILENAME, 1)
@@ -17,7 +32,14 @@ int main(){
         return IPC_RESULT_ERROR;
     }
 
+    writeInBinnacle("Finisher program deleted shared memory block.");
+    writeInBinnacle("Finisher program killed process producer.");
+    writeInBinnacle("Binnacle closed.");
+
     printf("Shared memory block deleted.\n");    
     
+    //detach shared memories 
+    detachMemoryBlock((void*)memoryInfoBlock);
+
     return 0;
 }
