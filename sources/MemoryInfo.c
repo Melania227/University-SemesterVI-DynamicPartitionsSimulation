@@ -8,9 +8,9 @@ MemoryInfo* newMemoryInfo(int memorySize, int processesArraySize){
     MemoryInfo* self = (MemoryInfo*)malloc(sizeof(MemoryInfo));
     
     //atributes
-    self->currentProcess = 0;
     self->memorySize = memorySize;
     self->processesArraySize = processesArraySize;
+    self->processCounter = 0;
 
     return self;
 }
