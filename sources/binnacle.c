@@ -6,7 +6,7 @@
 
 void writeLine(char*binnacleRoute, char*strToWrite){
     FILE *fptr;
-    fptr = fopen(binnacleRoute,"w");
+    fptr = fopen(binnacleRoute,"a");
     
     if(fptr == NULL)
     {
@@ -24,7 +24,7 @@ void writeLine(char*binnacleRoute, char*strToWrite){
     char strTime [100]; 
     strftime(strTime, strlen("HH:MM:SS")+1,"%H:%M:\%S", timeinfo);
 
-    fprintf(fptr, "%s %s \n", strToWrite, strTime);
+    fprintf(fptr, "Time: %s  -  %s\n", strTime, strToWrite);
 
     fclose(fptr);
 }
@@ -38,23 +38,5 @@ void createBinnacle(char*binnacleRoute){
     timeinfo = localtime ( &rawtime );
     strftime(binnacleRoute, strlen("binnacle/DD-MMM-YYYY HH:MM:SS.txt")+1,"binnacle/%d-%b-%Y_%H-%M-\%S.txt",timeinfo);
     
-    writeLine(binnacleRoute,"Binnacle created at:");
-}
-
-
-void writeFile(char* fileName){
-
-    FILE *fptr;
-    fptr = fopen(fileName,"w");
-    
-    if(fptr == NULL)
-    {
-        printf("Error!");   
-        exit(1);             
-    }
-
-    for (int i = 0; i < 10; i++)
-        fprintf(fptr, "Aqui deberian ir varas del proceso #%d\n", i + 1);
-
-    fclose(fptr);
+    writeLine(binnacleRoute,"Binnacle created.");
 }
