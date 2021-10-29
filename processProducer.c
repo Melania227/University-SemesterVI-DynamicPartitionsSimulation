@@ -11,9 +11,10 @@ int *memoryBlock;
 Process *processesBlock;
 pthread_mutex_t *mutexesBlock;
 MemoryInfo *memoryInfoBlock;
+int (*algorithm)( int* memory, int size, int amount);
+
 
 int firstFit(int* memory, int size, int amount){
-    // retorna la posicion en que la metio o -1 si no pudo
     int init = -1;
     int end = -1;
     for (int i = 0; i < size; i++) {
@@ -36,12 +37,14 @@ int firstFit(int* memory, int size, int amount){
 }
 
 int bestFit(int* memory, int size, int amount){
-    // retorna la posicion en que la metio o -1 si no pudo
     int initTemp = -1;
     int init = -1;
-    int endTemp = -1;
-    int blockSize = size;
-    for (int i = 0; i < size; i++) {
+    int endTemp = 0;
+    int blockSize = size+1;
+
+    for (int i = 0; i < size; i++)
+    {
+        //printf("%d ",memory[i]);
         if(memory[i]==0){
             if (initTemp==-1){
                 initTemp = i;
@@ -49,10 +52,22 @@ int bestFit(int* memory, int size, int amount){
             endTemp = i;
         }
         else{
+            if (initTemp != -1)
+            {
+                if ((endTemp-initTemp)+1>=amount){
+                    if((endTemp-initTemp)+1<blockSize){
+                        blockSize=(endTemp-initTemp)+1;
+                        init = initTemp;
+                    }
+                }
+            }
             initTemp = -1;
             endTemp = 0;
-            continue;
         }
+    }
+    
+    if (initTemp != -1)
+    {
         if ((endTemp-initTemp)+1>=amount){
             if((endTemp-initTemp)+1<blockSize){
                 blockSize=(endTemp-initTemp)+1;
@@ -60,17 +75,20 @@ int bestFit(int* memory, int size, int amount){
             }
         }
     }
-  //  printf("Espacio disponible en: %d \n", init);
+
+    //printf("\nBest Fit Espacio disponible en: %d \n", init);
     return init;
 }
 
 int worstFit(int* memory, int size, int amount){
-    // retorna la posicion en que la metio o -1 si no pudo
     int initTemp = -1;
     int init = -1;
-    int endTemp = -1;
+    int endTemp = 0;
     int blockSize = 0;
-    for (int i = 0; i < size; i++) {
+
+    for (int i = 0; i < size; i++)
+    {
+        //printf("%d ",memory[i]);
         if(memory[i]==0){
             if (initTemp==-1){
                 initTemp = i;
@@ -78,18 +96,31 @@ int worstFit(int* memory, int size, int amount){
             endTemp = i;
         }
         else{
+            if (initTemp != -1)
+            {
+                if ((endTemp-initTemp)+1>=amount){
+                    if((endTemp-initTemp)+1>blockSize){
+                        blockSize=(endTemp-initTemp)+1;
+                        init = initTemp;
+                    }
+                }
+            }
             initTemp = -1;
             endTemp = 0;
-            continue;
         }
-        if ((endTemp-initTemp)+1>amount){
+    }
+    
+    if (initTemp != -1)
+    {
+        if ((endTemp-initTemp)+1>=amount){
             if((endTemp-initTemp)+1>blockSize){
                 blockSize=(endTemp-initTemp)+1;
                 init = initTemp;
             }
         }
     }
-  //  printf("Espacio disponible en: %d \n", init);
+
+    //printf("\nWorst Fit Espacio disponible en: %d \n", init);
     return init;
 }
  
@@ -121,9 +152,10 @@ void modifyProcessState(Process *process, int state){
 void* process(){
  
     int lines = randomInRange(1,10);
-    int watingTime = randomInRange(20,60)*1000000;
+    int seconds = randomInRange(6,6);
+    int watingTime = seconds*1000000;
 
-    Process *process;
+    Process *process = NULL;
 
     pthread_mutex_lock(&mutexesBlock[1]);
     for (int i = 0; i < memoryInfoBlock->processesArraySize; i++)
@@ -134,16 +166,24 @@ void* process(){
             break;
         }    
     }
-    process->pId = pthread_self();
+    if (process == NULL)
+    {
+        printf("There's no space for process.");
+        return NULL;          
+    }
+    pthread_mutex_lock(&mutexesBlock[2]);  
+    memoryInfoBlock->processCounter++;
+    process->pId = memoryInfoBlock->processCounter;
     process->lines = lines;
     process->state = 1;
+    pthread_mutex_unlock(&mutexesBlock[2]);
     pthread_mutex_unlock(&mutexesBlock[1]);
 
-    printf("Process created pid: %d\n",process->pId);
+    printf("Process %d created with %d lines and %d seconds time.\n", process->pId, lines, seconds);
     
     pthread_mutex_lock(&mutexesBlock[0]); 
     modifyProcessState(process,3); 
-    int pos = worstFit(memoryBlock,memoryInfoBlock->memorySize,lines);
+    int pos = algorithm(memoryBlock,memoryInfoBlock->memorySize,lines);
     if (pos != -1)
     {
         modifyProcessPos(process,pos);
@@ -156,6 +196,8 @@ void* process(){
     pthread_mutex_unlock(&mutexesBlock[0]); 
     if (pos == -1)
     {
+        printf("There's no space for process %d, process died.\n", process->pId);
+        modifyProcess(process,0,0,0,0);
         return NULL;    
     }
     
@@ -168,10 +210,40 @@ void* process(){
     {
         memoryBlock[i]=0;
     }
+    printf("The process %d has finished successfully.\n", process->pId);
     modifyProcess(process,0,0,0,0);
     pthread_mutex_unlock(&mutexesBlock[0]); 
 
     return NULL;
+}
+
+void processProducer(){
+
+    int waitingTime = 0;
+
+    int threadsAmount = 0;
+    pthread_t *threads = malloc(sizeof(pthread_t));
+
+    while (true)
+    {
+        threadsAmount++;
+        threads = (pthread_t*)realloc(threads,sizeof(pthread_t)*threadsAmount);
+        
+        //Create thread
+        pthread_t t1;
+        pthread_create(&t1, NULL, &process, NULL);
+
+        threads[threadsAmount-1] = t1;     
+        
+        waitingTime = randomInRange(1,1)*1000000;  
+        usleep(waitingTime);
+    }
+
+    for (int i = 0; i < threadsAmount; i++)
+    {
+        //Join the PathFinderExecute Thread
+        pthread_join(threads[i], NULL);
+    }
 }
 
 int main(){    
@@ -188,34 +260,48 @@ int main(){
         return IPC_RESULT_ERROR;
     }
 
-    //produce processes
-    printf("Processes producer working...\n");
-
-    int waitingTime = randomInRange(30,60)*1000000;
-
-    int threadsAmount = 0;
-    pthread_t *threads = malloc(sizeof(pthread_t));
+    printf("\nWelcome to Process Producer Program!\n\n");
+    printf("Select the algorithm:\n");
+    printf("1. First-fit. \n");
+    printf("2. Best-fit. \n");
+    printf("3. Worst-fit. \n");
+    printf("4. Exit. \n");
 
     while (true)
     {
-        threadsAmount++;
-        threads = (pthread_t*)realloc(threads,sizeof(pthread_t)*threadsAmount);
-        
-        //Create thread
-        pthread_t t1;
-        pthread_create(&t1, NULL, &process, NULL);
-
-        threads[threadsAmount-1] = t1;       
-
-        usleep(waitingTime);
+        //read option
+        int option;
+        printf("Please enter an option: ");
+        scanf("%d", &option); 
+        if (option == 1)
+        {
+            printf("\nInitializing the Process Producer with %s.\n\n","First-fit");
+            algorithm = firstFit;
+            processProducer();
+            break;
+        } 
+        else if(option == 2){
+            printf("\nInitializing the Process Producer with %s.\n\n","Best-fit");
+            algorithm = bestFit;
+            processProducer();
+            break;
+        }
+        else if(option == 3){
+            printf("\nInitializing the Process Producer with %s.\n\n","Worst-fit");
+            algorithm = worstFit;
+            processProducer();
+            break;
+        }
+        else if(option == 4){
+            break;
+        }
+        else{
+            printf("Invalid option. ");
+        }
     }
 
-    for (int i = 0; i < threadsAmount; i++)
-    {
-        //Join the PathFinderExecute Thread
-        pthread_join(threads[i], NULL);
-    }
-    
+    printf("\nProcess Producer Program Finish!\n\n");    
+
     //detach shared memories 
     detachMemoryBlock((void*)memoryBlock);
     detachMemoryBlock((void*)processesBlock);
