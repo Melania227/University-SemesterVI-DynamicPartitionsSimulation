@@ -287,13 +287,14 @@ void processProducer(){
 
         threads[threadsAmount-1] = t1;     
         
-        int seconds = randomInRange(20,60);
+        int seconds = randomInRange(30,60);
         waitingTime = seconds*1000000;
 
         usleep(waitingTime);
 
         char* binnacleLine = (char*)malloc(sizeof(char)*100);
         sprintf(binnacleLine, "The Process Producer has waited for %d seconds.", seconds);
+        printf("The Process Producer has waited for %d seconds.\n", seconds);
         writeInBinnacle(binnacleLine);
 
     }
