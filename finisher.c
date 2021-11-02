@@ -27,9 +27,10 @@ int main(){
 
     if(kill(memoryInfoBlock->processProducerId, SIGKILL) == 0){
         writeInBinnacle("Finisher program killed process producer.");
+        printf("Finisher program killed process producer.\n");
     }
 
-    writeInBinnacle("Finisher program deleted shared memory block.");
+    writeInBinnacle("Finisher program deleted shared memory blocks.");
     writeInBinnacle("Binnacle closed.");
 
     pthread_mutex_unlock(&mutexesBlock[0]);
@@ -47,7 +48,8 @@ int main(){
         return IPC_RESULT_ERROR;
     }
 
-    printf("Shared memory block deleted.\n");   
+    printf("Binnacle closed.\n");
+    printf("Finisher program deleted shared memory blocks.\n");
 
     //detach shared memories 
     detachMemoryBlock((void*)memoryInfoBlock);
