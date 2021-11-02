@@ -105,8 +105,6 @@ int main(){
         return IPC_RESULT_ERROR;
     }
 
-    printf("Binnacle Route is: %s \n",memoryInfoBlock->binnacleRoute);
-    
     printf("\nWelcome to Spy Program!\n\n");
     
     while (true)
@@ -123,10 +121,12 @@ int main(){
         {
             memoryState();
             writeInBinnacle("Spy program checked memory state.");
+            break;
         } 
         else if(option == 2){
             processesState();
             writeInBinnacle("Spy program checked processes state.");
+            break;
         }
         else if(option == 3){
             break;
